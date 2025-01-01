@@ -1,0 +1,19 @@
+crypto-arbitrage-signal/
+ ├─ binance-connector/
+ │   ├─ main.go
+ │   ├─ go.mod
+ │   ├─ Dockerfile
+ ├─ kraken-connector/
+ │   ├─ main.go
+ │   ├─ go.mod
+ │   ├─ Dockerfile
+ ├─ arbitrage-scanner/
+ │   ├─ main.go
+ │   ├─ go.mod
+ │   ├─ Dockerfile
+ ├─ telegram-notifier/
+ │   ├─ main.go
+ │   ├─ go.mod
+ │   ├─ Dockerfile
+ ├─ docker-compose.yml
+ └─ .env
