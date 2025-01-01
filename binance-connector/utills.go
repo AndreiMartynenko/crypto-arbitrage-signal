@@ -12,3 +12,17 @@ func formatSymbol(pair string) string {
 func stripSlash(pair string) string {
 	return stringReplace(pair, "/", "")
 }
+
+// stringReplace is a basic function that replaces all occurrences of `old` with `new`.
+// We could also use strings.ReplaceAll(pair, "/", "") for brevity.
+func stringReplace(str, old, new string) string {
+	result := ""
+	for _, ch := range str {
+		if string(ch) == old {
+			result += new
+		} else {
+			result += string(ch)
+		}
+	}
+	return result
+}
