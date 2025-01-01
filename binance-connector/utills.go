@@ -8,3 +8,7 @@ func formatSymbol(pair string) string {
 	return fmt.Sprintf("%s%s", stripSlash(pair))
 }
 
+// stripSlash removes "/" from a string (e.g., "BTC/USDT" -> "BTCUSDT").
+func stripSlash(pair string) string {
+	return stringReplace(pair, "/", "")
+}
