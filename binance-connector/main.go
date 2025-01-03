@@ -18,6 +18,7 @@ func main() {
 
 }
 
+// fetchBinanceData fetches the latest bid/ask data from the Binance API,
 func fetchBinanceData() {
 
 }
