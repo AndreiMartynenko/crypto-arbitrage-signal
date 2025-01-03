@@ -17,3 +17,7 @@ var (
 func main() {
 
 }
+
+func fetchBinanceData() {
+
+}
