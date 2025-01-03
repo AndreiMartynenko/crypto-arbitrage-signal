@@ -19,6 +19,7 @@ func main() {
 }
 
 // fetchBinanceData fetches the latest bid/ask data from the Binance API,
+// parses the JSON response, and updates our global tickerInfo in a thread-safe way.
 func fetchBinanceData() {
 
 }
