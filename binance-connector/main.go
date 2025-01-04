@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sync"
+	"time"
 ) // Provides sync.RWMutex for concurrency-safe data access
 
 // We define global variables here for simplicity. In production, you might
@@ -18,6 +21,30 @@ var (
 )
 
 func main() {
+	// 1. Read environment variables for configuration (keys, pair, poll interval).
+	binanceAPIKey := os.Getenv("BINANCE_API_KEY") // Used if we need private endpoints
+	binanceAPISecret := os.Getenv("BINANCE_API_SECRET")
+	pairs := os.Getenv("PAIRS") // Typically "BTC/USDT" or "ETH/USDT", etc.
+	if pairs == "" {
+		pairs = "BTC/USDT" // Default if none provided
+	}
+
+	// This tells how frequently we'll poll Binance for new data.
+	pollIntervalStr := os.Getenv("POLL_INTERVAL")
+	if pollIntervalStr == "" {
+		pollIntervalStr = "5s" // Default to 5 seconds
+	}
+	pollInterval, err := time.ParseDuration(pollIntervalStr)
+	if err != nil {
+		log.Printf("Invalid POLL_INTERVAL format, defaulting to 5s: %v", err)
+		pollInterval = 5 * time.Second
+	}
+
+	// formatSymbol converts "BTC/USDT" -> "BTCUSDT" for Binance's API format.
+	binanceSymbol := formatSymbol(pairs)
+
+	log.Printf("Starting binance-connector for symbol=%s, pollInterval=%v\n",
+		binanceSymbol, pollInterval)
 
 }
 
