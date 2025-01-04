@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -59,6 +60,16 @@ func main() {
 			time.Sleep(pollInterval)
 		}
 	}()
+
+	// 3. Expose an HTTP endpoint (/latest-price) to retrieve the current data.
+	http.HandleFunc("/latest-price", handleLatestPrice)
+
+	// 4. Start the HTTP server on port 8001. This will block until an error or shutdown.
+	port := "8001"
+	log.Printf("HTTP server running on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("ListenAndServe error: %v", err)
+	}
 
 }
 
