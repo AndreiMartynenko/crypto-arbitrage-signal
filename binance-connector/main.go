@@ -46,6 +46,20 @@ func main() {
 	log.Printf("Starting binance-connector for symbol=%s, pollInterval=%v\n",
 		binanceSymbol, pollInterval)
 
+	// 2. Start a background goroutine that continuously fetches data from Binance.
+	//    This goroutine runs independently of the main thread.
+	go func() {
+		for {
+			// Attempt to fetch the latest bid/ask from Binance
+			err := fetchBinanceData(binanceSymbol, binanceAPIKey, binanceAPISecret)
+			if err != nil {
+				log.Printf("Error fetching data from Binance: %v", err)
+			}
+			// Sleep for pollInterval before fetching again
+			time.Sleep(pollInterval)
+		}
+	}()
+
 }
 
 // fetchBinanceData fetches the latest bid/ask data from the Binance API,
