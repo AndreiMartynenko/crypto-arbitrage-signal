@@ -23,5 +23,6 @@ func main() {
 func fetchBinanceData() {
 
 	// Construct the URL for the public bookTicker endpoint, e.g.:
+    // https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT
 
 }
