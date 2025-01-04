@@ -1,6 +1,9 @@
 package main
 
-import "sync" // Provides sync.RWMutex for concurrency-safe data access
+import (
+	"fmt"
+	"sync"
+) // Provides sync.RWMutex for concurrency-safe data access
 
 // We define global variables here for simplicity. In production, you might
 // want a more sophisticated approach, but this is fine for a connector service.
@@ -23,6 +26,7 @@ func main() {
 func fetchBinanceData() {
 
 	// Construct the URL for the public bookTicker endpoint, e.g.:
-    // https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT
+	// https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT
+	url := fmt.Sprintf("https://api.binance.com/api/v3/ticker/bookTicker?symbol=%s", symbol)
 
 }
