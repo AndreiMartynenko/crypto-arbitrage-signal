@@ -22,4 +22,6 @@ func main() {
 // parses the JSON response, and updates our global tickerInfo in a thread-safe way.
 func fetchBinanceData() {
 
+	// Construct the URL for the public bookTicker endpoint, e.g.:
+
 }
