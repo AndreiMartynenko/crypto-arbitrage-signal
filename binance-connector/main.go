@@ -11,6 +11,8 @@ import (
 	"time"          // For time.Duration, sleeping, and timestamps
 )
 
+// PART 1
+
 // BinanceBookTicker represents the structure of the JSON response
 // from Binance's /api/v3/ticker/bookTicker endpoint.
 // We only care about these specific fields for now.
@@ -98,7 +100,7 @@ func main() {
 // formatSymbol is a helper that just ensures "BTC/USDT" -> "BTCUSDT"
 // This is what Binance expects in its 'symbol' query parameter.
 func formatSymbol(pair string) string {
-	return fmt.Sprintf("%s%s", stripSlash(pair))
+	return fmt.Sprintf("%s", stripSlash(pair))
 }
 
 // stripSlash removes "/" from a string (e.g., "BTC/USDT" -> "BTCUSDT").
@@ -126,6 +128,9 @@ func fetchBinanceData(symbol, apiKey, apiSecret string) error {
 	// Construct the URL for the public bookTicker endpoint, e.g.:
 	// https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT
 	url := fmt.Sprintf("https://api.binance.com/api/v3/ticker/bookTicker?symbol=%s", symbol)
+
+	// Debug log:
+	log.Printf("Request URL: %s", url)
 
 	// Create a new GET request
 	req, err := http.NewRequest("GET", url, nil)
