@@ -1,6 +1,10 @@
 package main
 
-import "os"
+import (
+	"log"
+	"os"
+	"strconv"
+)
 
 // TickerData struct matches the JSON response from the binance-connector
 type TickerData struct {
@@ -15,6 +19,15 @@ func main() {
 	connectorURL := os.Getenv("CONNECTOR_URL")
 	if connectorURL == "" {
 		connectorURL = "http://binance-connector:8001/latest-price" // Default value
+	}
+
+	thresholdStr := os.Getenv("PRICE_THRESHOLD")
+	if thresholdStr == "" {
+		thresholdStr = "20000" // Default threshold
+	}
+	threshold, err := strconv.ParseFloat(thresholdStr, 64)
+	if err != nil {
+		log.Fatalf("Invalid PRICE_THRESHOLD: %v", err)
 	}
 
 }
