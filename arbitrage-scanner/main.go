@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -63,4 +65,26 @@ func main() {
 		time.Sleep(checkInterval)
 	}
 
+}
+
+// fetchTickerData fetches data from the binance-connector's `/latest-price` endpoint
+func fetchTickerData(url string) (TickerData, error) {
+	var tickerData TickerData
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return tickerData, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return tickerData, err
+	}
+
+	// Decode JSON response into TickerData
+	if err := json.NewDecoder(resp.Body).Decode(&tickerData); err != nil {
+		return tickerData, err
+	}
+
+	return tickerData, nil
 }
