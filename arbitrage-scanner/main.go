@@ -40,4 +40,27 @@ func main() {
 		log.Fatalf("Invalid CHECK_INTERVAL: %v", err)
 	}
 
+	log.Printf("Starting arbitrage scanner: connectorURL=%s, threshold=%.2f, interval=%v",
+		connectorURL, threshold, checkInterval)
+
+	// Main loop
+	for {
+		// Fetch the latest price from the connector
+		data, err := fetchTickerData(connectorURL)
+		if err != nil {
+			log.Printf("Error fetching data from connector: %v", err)
+		} else {
+			// Compare the ask price to the threshold
+			if data.Ask < threshold {
+				log.Printf("Opportunity found! Symbol=%s, Ask=%.2f < Threshold=%.2f", data.Symbol, data.Ask, threshold)
+				// Here, you could trigger a Telegram alert or other action
+			} else {
+				log.Printf("No opportunity: Symbol=%s, Ask=%.2f", data.Symbol, data.Ask)
+			}
+		}
+
+		// Wait for the next interval
+		time.Sleep(checkInterval)
+	}
+
 }
