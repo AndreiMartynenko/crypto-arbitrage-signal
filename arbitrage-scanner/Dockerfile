@@ -1,21 +1,24 @@
-# Use an official Golang runtime as the base image
-FROM golang:1.20
+# Use the official Golang image as a base
+FROM golang:1.20 AS build
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy Go module files and download dependencies
+# Copy go.mod and go.sum to the working directory
 COPY go.mod go.sum ./
+
+# Download dependencies
 RUN go mod download
 
-# Copy the source code
-COPY . .
+# Copy the source code into the container
+# Ensure this copies all source files in the arbitrage-scanner directory
+COPY . .  
 
-# Build the application
+# Build the Go application
 RUN go build -o arbitrage-scanner .
 
-# Expose the port (if you add an HTTP API in the future)
-EXPOSE 8002
-
-# Run the application
+# Use a minimal image for the final build
+FROM alpine:3.17
+WORKDIR /app
+COPY --from=build /app/arbitrage-scanner .
 CMD ["./arbitrage-scanner"]

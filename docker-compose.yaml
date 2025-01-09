@@ -38,10 +38,10 @@ services:
 
   arbitrage-scanner:
     build: 
-      # context: ./arbitrage-scanner
-      context: .
-      # dockerfile: Dockerfile
-      dockerfile: ./arbitrage-scanner/Dockerfile
+      context: ./arbitrage-scanner
+      # context: .
+      dockerfile: Dockerfile
+      # dockerfile: ./arbitrage-scanner/Dockerfile
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
