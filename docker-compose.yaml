@@ -38,14 +38,16 @@ services:
 
   arbitrage-scanner:
     build: 
-      context: ./arbitrage-scanner
-      dockerfile: Dockerfile
+      # context: ./arbitrage-scanner
+      context: .
+      # dockerfile: Dockerfile
+      dockerfile: ./arbitrage-scanner/Dockerfile
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
       # - kraken-connector
-    ports:
-      - "8003:8003"
+    # ports:
+    #   - "8003:8003"
     environment:
       # URL of the binance-connector service
       - CONNECTOR_URL=http://binance-connector:8001/latest-price
