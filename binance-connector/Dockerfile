@@ -1,34 +1,32 @@
-# Use an official Go image
+# Use the official Golang image as a base
 FROM golang:1.20-alpine AS build
 
-# Create an app directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy module files and download dependencies first (for caching)
-COPY go.mod go.sum ./
+# Copy the go.mod and go.sum files from the root of your project
+COPY ../../go.mod ../../go.sum ./
+
+# Download Go module dependencies
 RUN go mod download
 
-# Copy the rest of the source code
+# Copy the rest of the `binance-connector` source code
 COPY . .
 
-# Build the binary
+# Build the Go application
 RUN go build -o binance-connector .
 
-# Final stage: minimal runtime image
+# Use a minimal base image to run the app
 FROM alpine:3.17
+
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy compiled binary from the build stage
-COPY --from=build /app/binance-connector /app/binance-connector
+# Copy the compiled binary from the build stage
+COPY --from=build /app/binance-connector .
 
-# Set environment variables (example)
-ENV EXCHANGE_API_KEY=your_binance_key
-ENV EXCHANGE_API_SECRET=your_binance_secret
-ENV PAIRS=BTC/USDT,ETH/USDT
-ENV POLL_INTERVAL=5s
-
-# Expose a port if the connector serves an HTTP endpoint
+# Expose the HTTP port
 EXPOSE 8001
 
-# Default command
+# Run the application
 CMD ["./binance-connector"]
