@@ -41,7 +41,7 @@ services:
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
-      - kraken-connector
+      # - kraken-connector
     ports:
       - "8003:8003"
     environment:
