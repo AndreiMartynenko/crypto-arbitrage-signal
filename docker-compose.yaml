@@ -3,8 +3,10 @@ version: '3.8'
 services:
   binance-connector:
     build:
-     context: ./binance-connector
-     dockerfile: Dockerfile
+    #  context: ./binance-connector
+     context: .
+    #  dockerfile: Dockerfile
+    dockerfile: ./binance-connector/Dockerfile
     container_name: binance-connector
 
     #Until now my service is HTTP-based, we can map the ports
