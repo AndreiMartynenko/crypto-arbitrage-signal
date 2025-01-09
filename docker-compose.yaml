@@ -19,20 +19,20 @@ services:
     networks:
       - arbitrage_network
   
-  kraken-connector:
-    build: 
-      context: ./kraken-connector
-      dockerfile: Dockerfile
-    container_name: ./kraken-connector
-    ports:
-      - "8002:8002"
-    environment:
-      - EXCHANGE_API_KEY=${KRAKEN_API_KEY}
-      - EXCHANGE_API_SECRET=${KRAKEN_API_SECRET}
-      - PAIRS=BTC/USDT,ETH/USDT
-      - POLL_INTERVAL=5s
-    networks:
-      - arbitrage_network
+  # kraken-connector:
+  #   build: 
+  #     context: ./kraken-connector
+  #     dockerfile: Dockerfile
+  #   container_name: ./kraken-connector
+  #   ports:
+  #     - "8002:8002"
+  #   environment:
+  #     - EXCHANGE_API_KEY=${KRAKEN_API_KEY}
+  #     - EXCHANGE_API_SECRET=${KRAKEN_API_SECRET}
+  #     - PAIRS=BTC/USDT,ETH/USDT
+  #     - POLL_INTERVAL=5s
+  #   networks:
+  #     - arbitrage_network
 
   arbitrage-scanner:
     build: 
@@ -57,20 +57,20 @@ services:
     networks:
       - arbitrage_network
   
-  telegram-notifier:
-    build: 
-      context: ./telegram-notifier
-      dockerfile: Dockerfile
-    container_name: telegram-notifier
-    depends_on:
-      - arbitrage-scanner
-    ports:
-      - "8004:8004"
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-    networks:
-      - arbitrage_network
+  # telegram-notifier:
+  #   build: 
+  #     context: ./telegram-notifier
+  #     dockerfile: Dockerfile
+  #   container_name: telegram-notifier
+  #   depends_on:
+  #     - arbitrage-scanner
+  #   ports:
+  #     - "8004:8004"
+  #   environment:
+  #     - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+  #     - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+  #   networks:
+  #     - arbitrage_network
   
 networks:
   arbitrage_network:
