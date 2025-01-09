@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 // TickerData struct matches the JSON response from the binance-connector
@@ -28,6 +29,15 @@ func main() {
 	threshold, err := strconv.ParseFloat(thresholdStr, 64)
 	if err != nil {
 		log.Fatalf("Invalid PRICE_THRESHOLD: %v", err)
+	}
+
+	checkIntervalStr := os.Getenv("CHECK_INTERVAL")
+	if checkIntervalStr == "" {
+		checkIntervalStr = "5s" // Default check interval
+	}
+	checkInterval, err := time.ParseDuration(checkIntervalStr)
+	if err != nil {
+		log.Fatalf("Invalid CHECK_INTERVAL: %v", err)
 	}
 
 }
