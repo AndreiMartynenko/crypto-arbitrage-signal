@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -52,6 +54,10 @@ func main() {
 		if err != nil {
 			log.Printf("Error fetching data from connector: %v", err)
 		} else {
+			// Log the data fetched for debugging purposes
+			log.Printf("Fetched data: Symbol=%s, Bid=%.2f, Ask=%.2f, LastUpdate=%s",
+				data.Symbol, data.Bid, data.Ask, data.LastUpdate)
+
 			// Compare the ask price to the threshold
 			if data.Ask < threshold {
 				log.Printf("Opportunity found! Symbol=%s, Ask=%.2f < Threshold=%.2f", data.Symbol, data.Ask, threshold)
@@ -64,7 +70,6 @@ func main() {
 		// Wait for the next interval
 		time.Sleep(checkInterval)
 	}
-
 }
 
 // fetchTickerData fetches data from the binance-connector's `/latest-price` endpoint
@@ -73,17 +78,24 @@ func fetchTickerData(url string) (TickerData, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return tickerData, err
+		return tickerData, fmt.Errorf("failed to make HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return tickerData, err
+		return tickerData, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
 	}
 
+	// Log raw response for debugging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return tickerData, fmt.Errorf("failed to read response body: %v", err)
+	}
+	log.Printf("Raw response body: %s", string(body))
+
 	// Decode JSON response into TickerData
-	if err := json.NewDecoder(resp.Body).Decode(&tickerData); err != nil {
-		return tickerData, err
+	if err := json.Unmarshal(body, &tickerData); err != nil {
+		return tickerData, fmt.Errorf("failed to decode JSON response: %v", err)
 	}
 
 	return tickerData, nil

@@ -38,10 +38,10 @@ services:
 
   arbitrage-scanner:
     build: 
-      context: ./arbitrage-scanner
-      # context: .
-      dockerfile: Dockerfile
-      # dockerfile: ./arbitrage-scanner/Dockerfile
+      # context: ./arbitrage-scanner
+      context: .
+      # dockerfile: Dockerfile
+      dockerfile: ./arbitrage-scanner/Dockerfile
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
@@ -50,11 +50,9 @@ services:
     #   - "8003:8003"
     environment:
       # URL of the binance-connector service
-      - CONNECTOR_URL=http://binance-connector:8001/latest-price
-      - PRICE_THRESHOLD=20000
-      - CHECK_INTERVAL=5s
-      - SPREAD_THRESHOLD=1.0
-      - LOG_LEVEL=info
+    - CONNECTOR_URL=http://binance-connector:8001/latest-price
+    - PRICE_THRESHOLD=20000
+    - CHECK_INTERVAL=5s
       # Possibly addresses or URLs if you're calling connectors via HTTP
       # e.g. "BINANCE_CONNECTOR_URL=http://binance-connector:8001"
       # e.g. "KRAKEN_CONNECTOR_URL=http://kraken-connector:8002"
