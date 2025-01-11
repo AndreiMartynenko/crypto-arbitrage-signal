@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// TickerData struct matches the JSON response from the binance-connector
+// TickerData represents the structure of the JSON response from the binance-connector
 type TickerData struct {
 	Symbol     string  `json:"symbol"`
 	Bid        float64 `json:"bid"`
@@ -49,21 +49,29 @@ func main() {
 
 	// Main loop
 	for {
-		// Fetch the latest price from the connector
-		data, err := fetchTickerData(connectorURL)
+		// Fetch the latest prices from the connector
+		tickers, err := fetchTickerData(connectorURL)
 		if err != nil {
 			log.Printf("Error fetching data from connector: %v", err)
 		} else {
-			// Log the data fetched for debugging purposes
-			log.Printf("Fetched data: Symbol=%s, Bid=%.2f, Ask=%.2f, LastUpdate=%s",
-				data.Symbol, data.Bid, data.Ask, data.LastUpdate)
+			// Process each ticker and find opportunities
+			for _, data := range tickers {
+				log.Printf("Fetched data: Symbol=%s, Bid=%.2f, Ask=%.2f, LastUpdate=%s",
+					data.Symbol, data.Bid, data.Ask, data.LastUpdate)
 
-			// Compare the ask price to the threshold
-			if data.Ask < threshold {
-				log.Printf("Opportunity found! Symbol=%s, Ask=%.2f < Threshold=%.2f", data.Symbol, data.Ask, threshold)
-				// Here, you could trigger a Telegram alert or other action
-			} else {
-				log.Printf("No opportunity: Symbol=%s, Ask=%.2f", data.Symbol, data.Ask)
+				if data.Ask < threshold {
+					message := fmt.Sprintf("Opportunity found! Symbol=%s, Ask=%.2f < Threshold=%.2f", data.Symbol, data.Ask, threshold)
+					log.Println(message)
+
+					// Notify Telegram
+					if err := notifyTelegram(message); err != nil {
+						log.Printf("Failed to send Telegram notification: %v", err)
+					} else {
+						log.Printf("Telegram notification sent: %s", message)
+					}
+				} else {
+					log.Printf("No opportunity: Symbol=%s, Ask=%.2f", data.Symbol, data.Ask)
+				}
 			}
 		}
 
@@ -72,31 +80,49 @@ func main() {
 	}
 }
 
-// fetchTickerData fetches data from the binance-connector's `/latest-price` endpoint
-func fetchTickerData(url string) (TickerData, error) {
-	var tickerData TickerData
+// fetchTickerData fetches and parses data from the binance-connector
+func fetchTickerData(url string) ([]TickerData, error) {
+	var tickerDataMap map[string]TickerData
+	var tickerDataList []TickerData
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return tickerData, fmt.Errorf("failed to make HTTP request: %v", err)
+		return nil, fmt.Errorf("failed to fetch data from connector: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return tickerData, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Log raw response for debugging
-	body, err := io.ReadAll(resp.Body)
+	// Decode JSON response into a map
+	if err := json.NewDecoder(resp.Body).Decode(&tickerDataMap); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON response: %v", err)
+	}
+
+	// Convert map values to a slice
+	for _, data := range tickerDataMap {
+		tickerDataList = append(tickerDataList, data)
+	}
+
+	return tickerDataList, nil
+}
+
+// notifyTelegram sends a notification message to the Telegram Notifier service
+func notifyTelegram(message string) error {
+	notifierURL := "http://telegram-notifier:8004/sendAlert"
+	payload := map[string]string{"message": message}
+	body, _ := json.Marshal(payload)
+
+	resp, err := http.Post(notifierURL, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return tickerData, fmt.Errorf("failed to read response body: %v", err)
+		return fmt.Errorf("failed to notify Telegram: %v", err)
 	}
-	log.Printf("Raw response body: %s", string(body))
+	defer resp.Body.Close()
 
-	// Decode JSON response into TickerData
-	if err := json.Unmarshal(body, &tickerData); err != nil {
-		return tickerData, fmt.Errorf("failed to decode JSON response: %v", err)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected response from Telegram Notifier: %s", resp.Status)
 	}
 
-	return tickerData, nil
+	return nil
 }

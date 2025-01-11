@@ -3,77 +3,52 @@ version: '3.8'
 services:
   binance-connector:
     build:
-    #  context: ./binance-connector
       context: .
-    #  dockerfile: Dockerfile
       dockerfile: ./binance-connector/Dockerfile
     container_name: binance-connector
-
-    #Until now my service is HTTP-based, we can map the ports
     ports:
       - "8001:8001"
     environment:
-      # Optionally override environment variables here
       - EXCHANGE_API_KEY=${BINANCE_API_KEY}
       - EXCHANGE_API_SECRET=${BINANCE_API_SECRET}
       - PAIRS=BTC/USDT,ETH/USDT
       - POLL_INTERVAL=5s
     networks:
       - arbitrage_network
-  
-  # kraken-connector:
-  #   build: 
-  #     context: ./kraken-connector
-  #     dockerfile: Dockerfile
-  #   container_name: ./kraken-connector
-  #   ports:
-  #     - "8002:8002"
-  #   environment:
-  #     - EXCHANGE_API_KEY=${KRAKEN_API_KEY}
-  #     - EXCHANGE_API_SECRET=${KRAKEN_API_SECRET}
-  #     - PAIRS=BTC/USDT,ETH/USDT
-  #     - POLL_INTERVAL=5s
-  #   networks:
-  #     - arbitrage_network
 
   arbitrage-scanner:
-    build: 
-      # context: ./arbitrage-scanner
+    build:
       context: .
-      # dockerfile: Dockerfile
       dockerfile: ./arbitrage-scanner/Dockerfile
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
-      # - kraken-connector
-    # ports:
-    #   - "8003:8003"
+      - telegram-notifier
     environment:
-      # URL of the binance-connector service
-    - CONNECTOR_URL=http://binance-connector:8001/latest-price
-    - PRICE_THRESHOLD=20000
-    - CHECK_INTERVAL=5s
-      # Possibly addresses or URLs if you're calling connectors via HTTP
-      # e.g. "BINANCE_CONNECTOR_URL=http://binance-connector:8001"
-      # e.g. "KRAKEN_CONNECTOR_URL=http://kraken-connector:8002"
+      - CONNECTOR_URL=http://binance-connector:8001/latest-price
+      - PRICE_THRESHOLD=20000
+      - CHECK_INTERVAL=5s
     networks:
       - arbitrage_network
-  
-  # telegram-notifier:
-  #   build: 
-  #     context: ./telegram-notifier
-  #     dockerfile: Dockerfile
-  #   container_name: telegram-notifier
-  #   depends_on:
-  #     - arbitrage-scanner
-  #   ports:
-  #     - "8004:8004"
-  #   environment:
-  #     - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-  #     - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-  #   networks:
-  #     - arbitrage_network
-  
+
+  telegram-notifier:
+    build:
+      context: .
+      dockerfile: ./telegram-notifier/Dockerfile
+    container_name: telegram-notifier
+    ports:
+      - "8004:8004"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    networks:
+      - arbitrage_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 networks:
   arbitrage_network:
     driver: bridge
