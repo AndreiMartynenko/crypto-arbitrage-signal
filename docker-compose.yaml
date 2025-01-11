@@ -16,6 +16,21 @@ services:
     networks:
       - arbitrage_network
 
+  kraken-connector:
+    build:
+      context: .
+      dockerfile: ./kraken-connector/Dockerfile
+    container_name: kraken-connector
+    ports:
+      - "8002:8002"
+    environment:
+      - API_KEY=${KRAKEN_API_KEY}
+      - API_SECRET=${KRAKEN_API_SECRET}
+      - PAIRS=BTC/USD,ETH/USD
+      - POLL_INTERVAL=5s
+    networks:
+      - arbitrage_network
+
   arbitrage-scanner:
     build:
       context: .
@@ -23,9 +38,11 @@ services:
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
+      - kraken-connector
       - telegram-notifier
     environment:
-      - CONNECTOR_URL=http://binance-connector:8001/latest-price
+      - BINANCE_URL=http://binance-connector:8001/latest-price
+      - KRAKEN_URL=http://kraken-connector:8002/latest-price
       - PRICE_THRESHOLD=20000
       - CHECK_INTERVAL=5s
     networks:
