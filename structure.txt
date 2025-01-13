@@ -17,3 +17,6 @@ crypto-arbitrage-signal/
  │   ├─ Dockerfile
  ├─ docker-compose.yml
  └─ .env
+
+
+ Add Database
