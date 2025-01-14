@@ -1,3 +1,78 @@
+# version: '3.8'
+
+# services:
+#   binance-connector:
+#     build:
+#       context: .
+#       dockerfile: ./binance-connector/Dockerfile
+#     container_name: binance-connector
+#     ports:
+#       - "8001:8001"
+#     environment:
+#       - EXCHANGE_API_KEY=${BINANCE_API_KEY}
+#       - EXCHANGE_API_SECRET=${BINANCE_API_SECRET}
+#       - PAIRS=BTC/USDT,ETH/USDT
+#       - POLL_INTERVAL=5s
+#     networks:
+#       - arbitrage_network
+
+#   kraken-connector:
+#     build:
+#       context: .
+#       dockerfile: ./kraken-connector/Dockerfile
+#     container_name: kraken-connector
+#     ports:
+#       - "8002:8002"
+#     environment:
+#       - API_KEY=${KRAKEN_API_KEY}
+#       - API_SECRET=${KRAKEN_API_SECRET}
+#       - PAIRS=BTC/USD,ETH/USD
+#       - POLL_INTERVAL=5s
+#     networks:
+#       - arbitrage_network
+
+#   arbitrage-scanner:
+#     build:
+#       context: .
+#       dockerfile: ./arbitrage-scanner/Dockerfile
+#     container_name: arbitrage-scanner
+#     depends_on:
+#       - binance-connector
+#       - kraken-connector
+#       - telegram-notifier
+#     environment:
+#       - BINANCE_URL=http://binance-connector:8001/latest-price
+#       - KRAKEN_URL=http://kraken-connector:8002/latest-price
+#       - PRICE_THRESHOLD=20000
+#       - CHECK_INTERVAL=5s
+#     networks:
+#       - arbitrage_network
+
+#   telegram-notifier:
+#     build:
+#       context: .
+#       dockerfile: ./telegram-notifier/Dockerfile
+#     container_name: telegram-notifier
+#     ports:
+#       - "8004:8004"
+#     environment:
+#       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+#       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+#     networks:
+#       - arbitrage_network
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 3
+
+# networks:
+#   arbitrage_network:
+#     driver: bridge
+
+
+# with db
+
 version: '3.8'
 
 services:
@@ -16,21 +91,6 @@ services:
     networks:
       - arbitrage_network
 
-  kraken-connector:
-    build:
-      context: .
-      dockerfile: ./kraken-connector/Dockerfile
-    container_name: kraken-connector
-    ports:
-      - "8002:8002"
-    environment:
-      - API_KEY=${KRAKEN_API_KEY}
-      - API_SECRET=${KRAKEN_API_SECRET}
-      - PAIRS=BTC/USD,ETH/USD
-      - POLL_INTERVAL=5s
-    networks:
-      - arbitrage_network
-
   arbitrage-scanner:
     build:
       context: .
@@ -38,13 +98,17 @@ services:
     container_name: arbitrage-scanner
     depends_on:
       - binance-connector
-      - kraken-connector
       - telegram-notifier
+      - db
     environment:
-      - BINANCE_URL=http://binance-connector:8001/latest-price
-      - KRAKEN_URL=http://kraken-connector:8002/latest-price
+      - CONNECTOR_URL=http://binance-connector:8001/latest-price
       - PRICE_THRESHOLD=20000
       - CHECK_INTERVAL=5s
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=signals
     networks:
       - arbitrage_network
 
@@ -58,6 +122,11 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=signals
     networks:
       - arbitrage_network
     healthcheck:
@@ -66,6 +135,23 @@ services:
       timeout: 5s
       retries: 3
 
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: signals
+    networks:
+      - arbitrage_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 networks:
   arbitrage_network:
     driver: bridge
+
+volumes:
+  postgres_data:
