@@ -3,14 +3,13 @@ package main
 //Create a database connection
 //Postgres
 
-package main
-
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq" // PostgreSQL driver
 	"log"
 	"os"
+
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 // Database configuration
@@ -38,4 +37,3 @@ func initDB() {
 
 	log.Println("Connected to the database successfully!")
 }
-
