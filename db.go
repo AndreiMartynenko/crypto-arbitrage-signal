@@ -37,3 +37,11 @@ func initDB() {
 
 	log.Println("Connected to the database successfully!")
 }
+
+func saveSignal(symbol string, bid, ask float64, message string) {
+	query := `INSERT INTO signals (symbol, bid_price, ask_price, message) VALUES ($1, $2, $3, $4)`
+	_, err := db.Exec(query, symbol, bid, ask, message)
+	if err != nil {
+		log.Printf("Failed to save signal to database: %v", err)
+	}
+}
